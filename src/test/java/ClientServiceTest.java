@@ -1,35 +1,34 @@
-import org.assertj.core.api.SoftAssertions;
+import org.bestbank.Account;
+import org.bestbank.Client;
+import org.bestbank.ClientRepository;
+import org.bestbank.ClientService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
+
+import static org.mockito.Mockito.*;
 
 public class ClientServiceTest {
-    private List<Client> clients;
     private ClientService clientService;
+    private ClientRepository repository;
 
     @BeforeEach
     public void setup(){
-        clients = new ArrayList<>();
-        clientService = new ClientService(new MemoryClientRepository(clients));
+        repository = mock(ClientRepository.class);
+        clientService = new ClientService(repository);
     }
 
-    //Testing Method save
+//    //Testing Method save
     @Test
     public void save_AllParamsOk_ClientSaved(){
         //given
-        Client client = new Client("Bartek", "bar@a.pl", 1000);
+        Client client = new Client("Bartek", "bar@a.pl", Collections.singletonList(new Account(1000, "PLN")));
         //when
         clientService.save(client);
         //then
-        Client actualClient = clientService.findByEmail(client.getEmail());
-        Client expectedClient = new Client("Bartek", "bar@a.pl", 1000);
-
-        Assertions.assertEquals(expectedClient, actualClient);
+        verify(repository).save(client);
     }
 
     @Test
@@ -43,7 +42,7 @@ public class ClientServiceTest {
     @Test
     public void save_nullNameClient_throwIllegalArgumentException(){
         //given
-        Client client = new Client(null, "bar@a.pl", 1000);
+        Client client = new Client(null, "bar@a.pl", Collections.singletonList(new Account(1000, "PLN")));
         //when/then
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> clientService.save(client)
@@ -53,7 +52,7 @@ public class ClientServiceTest {
     @Test
     public void save_nullEmailClient_throwIllegalArgumentException(){
         //given
-        Client client = new Client("Bartek", null, 1000);
+        Client client = new Client("Bartek", null, Collections.singletonList(new Account(1000, "PLN")));
         //when/then
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> clientService.save(client)
@@ -63,24 +62,24 @@ public class ClientServiceTest {
     @Test
     public void save_negativeBalanceClient_throwIllegalArgumentException(){
         //given
-        Client client = new Client("Bartek", "bar@a.pl", -1000);
+        Client client = new Client("Bartek", "bar@a.pl", Collections.singletonList(new Account(-200, "PLN")));
         //when/then
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> clientService.save(client)
         );
     }
-
-    //Testing Method findByEmail
+//
+//    //Testing Method findByEmail
 
     @Test
     public void findByEmail_AllParamsOk_foundClient(){
         //given
-        Client client = new Client("Bartek", "bar@a.pl", 1000);
-        clients.add(client);
+        Client client = new Client("Bartek", "bar@a.pl", Collections.singletonList(new Account(1000, "PLN")));
+        when(repository.findByEmail(client.getEmail())).thenReturn(client);
         //when
         Client actualClient = clientService.findByEmail(client.getEmail());
         //then
-        Client expectedClient = new Client("Bartek", "bar@a.pl", 1000);
+        Client expectedClient = new Client("Bartek", "bar@a.pl", Collections.singletonList(new Account(1000, "PLN")));
 
         Assertions.assertEquals(expectedClient, actualClient);
     }
@@ -104,7 +103,7 @@ public class ClientServiceTest {
     @Test
     public void findByEmail_doesntExistClient_throwIllegalArgumentException(){
         //given
-        Client client = new Client("Bartek", "bar@a.pl", 1000);
+        Client client = new Client("Bartek", "bar@a.pl", Collections.singletonList(new Account(200, "PLN")));
         //when/then
         Assertions.assertThrows(NoSuchElementException.class,
                 () -> clientService.findByEmail(client.getEmail())
@@ -115,12 +114,12 @@ public class ClientServiceTest {
     public void findByEmail_UpperCaseEmail_foundClient(){
         //given
         String clientEmail = "BAR@A.PL";
-        Client client = new Client("Bartek", "bar@a.pl", 1000);
-        clients.add(client);
+        Client client = new Client("Bartek", "bar@a.pl", Collections.singletonList(new Account(1000, "PLN")));
+        when(repository.findByEmail(clientEmail.toLowerCase())).thenReturn(client);
         //when
         Client actualClient = clientService.findByEmail(clientEmail);
         //then
-        Client expectedClient = new Client("Bartek", "bar@a.pl", 1000);
+        Client expectedClient = new Client("Bartek", "bar@a.pl", Collections.singletonList(new Account(1000, "PLN")));
 
         Assertions.assertEquals(expectedClient, actualClient);
     }
@@ -131,38 +130,30 @@ public class ClientServiceTest {
     @Test
     public void transfer_AllParamsOk_foundsTransferred(){
         //given
-        Client clientFrom = new Client("Bartek", "bar@a.pl", 1000);
-        Client clientTo = new Client("Alek", "alek@a.pl", 500);
+        Client clientFrom = new Client("Bartek", "bar@a.pl", Collections.singletonList(new Account(1000, "PLN")));
+        Client clientTo = new Client("Alek", "alek@a.pl", Collections.singletonList(new Account(500, "PLN")));
         double amount = 100;
-        clients.add(clientFrom);
-        clients.add(clientTo);
+        when(repository.findByEmail(clientFrom.getEmail())).thenReturn(clientFrom);
+        when(repository.findByEmail(clientTo.getEmail())).thenReturn(clientTo);
         //when
         clientService.transfer(clientFrom.getEmail(), clientTo.getEmail(), amount);
         //then
-        Client actualClientFrom = clientService.findByEmail(clientFrom.getEmail());
-        Client actualClientTo = clientService.findByEmail(clientTo.getEmail());
-        Client expectedClientFrom = new Client("Bartek", "bar@a.pl", 900);
-        Client expectedClientTo = new Client("Alek", "alek@a.pl", 600);
+        Client expectedClientFrom = new Client("Bartek", "bar@a.pl", Collections.singletonList(new Account(900, "PLN")));
+        Client expectedClientTo = new Client("Alek", "alek@a.pl", Collections.singletonList(new Account(600, "PLN")));
 
-        SoftAssertions softAssertions = new SoftAssertions();
-        softAssertions
-                .assertThat(actualClientFrom)
-                .isEqualTo(expectedClientFrom);
-        softAssertions
-                .assertThat(actualClientTo)
-                .isEqualTo(expectedClientTo);
-        softAssertions.assertAll();
+        verify(repository).save(expectedClientFrom);
+        verify(repository).save(expectedClientTo);
 
     }
 
     @Test
     public void transfer_notEnoughFounds_throwIllegalArgumentException(){
         //given
-        Client clientFrom = new Client("Bartek", "bar@a.pl", 100);
-        Client clientTo = new Client("Alek", "alek@a.pl", 500);
+        Client clientFrom = new Client("Bartek", "bar@a.pl", Collections.singletonList(new Account(100, "PLN")));
+        Client clientTo = new Client("Alek", "alek@a.pl", Collections.singletonList(new Account(500, "PLN")));
         double amount = 1000;
-        clients.add(clientFrom);
-        clients.add(clientTo);
+        when(repository.findByEmail(clientFrom.getEmail())).thenReturn(clientFrom);
+        when(repository.findByEmail(clientTo.getEmail())).thenReturn(clientTo);
         //when
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> clientService.transfer(clientFrom.getEmail(), clientTo.getEmail(), amount)
@@ -172,11 +163,11 @@ public class ClientServiceTest {
     @Test
     public void transfer_negativeAmount_throwIllegalArgumentException(){
         //given
-        Client clientFrom = new Client("Bartek", "bar@a.pl", 100);
-        Client clientTo = new Client("Alek", "alek@a.pl", 500);
+        Client clientFrom = new Client("Bartek", "bar@a.pl",  Collections.singletonList(new Account(100, "PLN")));
+        Client clientTo = new Client("Alek", "alek@a.pl",  Collections.singletonList(new Account(500, "PLN")));
         double amount = -100;
-        clients.add(clientFrom);
-        clients.add(clientTo);
+        when(repository.findByEmail(clientFrom.getEmail())).thenReturn(clientFrom);
+        when(repository.findByEmail(clientTo.getEmail())).thenReturn(clientTo);
         //when
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> clientService.transfer(clientFrom.getEmail(), clientTo.getEmail(), amount)
@@ -186,9 +177,8 @@ public class ClientServiceTest {
     @Test
     public void transfer_toSameClient_throwIllegalArgumentException(){
         //given
-        Client clientFrom = new Client("Bartek", "bar@a.pl", 200);
+        Client clientFrom = new Client("Bartek", "bar@a.pl",  Collections.singletonList(new Account(200, "PLN")));
         double amount = 100;
-        clients.add(clientFrom);
         //when
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> clientService.transfer(clientFrom.getEmail(), clientFrom.getEmail(), amount)
@@ -198,11 +188,9 @@ public class ClientServiceTest {
     @Test
     public void transfer_nullEmail_throwIllegalArgumentException(){
         //given
-        Client clientFrom = new Client("Bartek", null, 200);
-        Client clientTo = new Client("Alek", "alek@a.pl", 500);
+        Client clientFrom = new Client("Bartek", null, Collections.singletonList(new Account(200, "PLN")));
+        Client clientTo = new Client("Alek", "alek@a.pl", Collections.singletonList(new Account(500, "PLN")));
         double amount = 100;
-        clients.add(clientFrom);
-        clients.add(clientTo);
         //when
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> clientService.transfer(clientFrom.getEmail(), clientTo.getEmail(), amount)
@@ -212,11 +200,9 @@ public class ClientServiceTest {
     @Test
     public void transfer_emptyEmail_throwIllegalArgumentException(){
         //given
-        Client clientFrom = new Client("Bartek", "", 200);
-        Client clientTo = new Client("Alek", "alek@a.pl", 500);
+        Client clientFrom = new Client("Bartek", "", Collections.singletonList(new Account(200, "PLN")));
+        Client clientTo = new Client("Alek", "alek@a.pl", Collections.singletonList(new Account(500, "PLN")));
         double amount = 100;
-        clients.add(clientFrom);
-        clients.add(clientTo);
         //when
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> clientService.transfer(clientFrom.getEmail(), clientTo.getEmail(), amount)
@@ -228,46 +214,39 @@ public class ClientServiceTest {
         //given
         String bartekEmail = "BAR@B.PL";
         String marekEmail = "MAREK@M.PL";
-        Client clientFrom = new Client("Bartek", "bar@b.pl", 200);
-        Client clientTo = new Client("Marek", "marek@m.pl", 500);
+        Client clientFrom = new Client("Bartek", "bar@b.pl", Collections.singletonList(new Account(200, "PLN")));
+        Client clientTo = new Client("Marek", "marek@m.pl", Collections.singletonList(new Account(500, "PLN")));
         double amount = 100;
-        clients.add(clientFrom);
-        clients.add(clientTo);
+        when(repository.findByEmail(clientFrom.getEmail())).thenReturn(clientFrom);
+        when(repository.findByEmail(clientTo.getEmail())).thenReturn(clientTo);
         //when
         clientService.transfer(bartekEmail, marekEmail, amount);
         //then
-        Client expectedClientFrom = new Client("Bartek", "bar@b.pl", 100);
-        Client expectedClientTo = new Client("Marek", "marek@m.pl", 600);
-        Client actualClientFrom = clientService.findByEmail(clientFrom.getEmail());
-        Client actualClientTo = clientService.findByEmail(clientTo.getEmail());
+        Client expectedClientFrom = new Client("Bartek", "bar@b.pl", Collections.singletonList(new Account(100, "PLN")));
+        Client expectedClientTo = new Client("Marek", "marek@m.pl", Collections.singletonList(new Account(600, "PLN")));
 
-        SoftAssertions softAssertions = new SoftAssertions();
-        softAssertions
-                .assertThat(actualClientFrom)
-                .isEqualTo(expectedClientFrom);
-        softAssertions
-                .assertThat(actualClientTo)
-                .isEqualTo(expectedClientTo);
-        softAssertions.assertAll();
+        verify(repository).save(expectedClientFrom);
+        verify(repository).save(expectedClientTo);
+
     }
 
     @Test
     public void withdraw_AllParamsOk_foundsWithdrawn(){
         //given
-        Client client = new Client("Bartek", "bar@b.pl", 200);
-        clients.add(client);
+        Client client = new Client("Bartek", "bar@b.pl", Collections.singletonList(new Account(200, "PLN")));
+        when(repository.findByEmail(client.getEmail())).thenReturn(client);
         //when
         clientService.withdraw(client.getEmail(), 100);
         //then
-        Client expectedClient = new Client("Bartek", "bar@b.pl", 100);
-        Assertions.assertTrue(clients.contains(expectedClient));
+        Client expectedClient = new Client("Bartek", "bar@b.pl", Collections.singletonList(new Account(100, "PLN")));
+
+        verify(repository).save(expectedClient);
     }
 
     @Test
     public void withdraw_negativeAmount_throwIllegalArgumentException(){
         //given
-        Client client = new Client("Bartek", "bar@b.pl", 200);
-        clients.add(client);
+        Client client = new Client("Bartek", "bar@b.pl", Collections.singletonList(new Account(200, "PLN")));
         //when/then
         Assertions.assertThrows(
                 IllegalArgumentException.class, () ->
@@ -279,8 +258,7 @@ public class ClientServiceTest {
     @Test
     public void withdraw_zeroAmount_throwsIllegalArgumentException() {
         //given
-        Client client = new Client("Bartek", "bar@b.pl", 200);
-        clients.add(client);
+        Client client = new Client("Bartek", "bar@b.pl", Collections.singletonList(new Account(200, "PLN")));
         //when
         Assertions.assertThrows(
                 IllegalArgumentException.class,
@@ -291,8 +269,8 @@ public class ClientServiceTest {
     @Test
     public void withdraw_amountBiggerThenBalance_throwsIllegalArgumentException() {
         //given
-        Client client = new Client("Bartek", "bar@b.pl", 200);
-        clients.add(client);
+        Client client = new Client("Bartek", "bar@b.pl", Collections.singletonList(new Account(200, "PLN")));
+        when(repository.findByEmail(client.getEmail())).thenReturn(client);
         //when
         Assertions.assertThrows(
                 IllegalArgumentException.class,
@@ -304,6 +282,7 @@ public class ClientServiceTest {
     public void withdraw_incorrectEmail_throwsNoSuchElementException() {
         //given
         String email = "incorrect_email@a.pl";
+        when(repository.findByEmail(email)).thenThrow(new NoSuchElementException());
         //when/then
         Assertions.assertThrows(
                 NoSuchElementException.class,
@@ -316,14 +295,14 @@ public class ClientServiceTest {
     public void withdraw_upperCaseEmail_balanceChangedCorrectly() {
         //given
         String email = "BAR@B.PL";
-        Client client = new Client("Bartek", "bar@b.pl", 200);
-        clients.add(client);
+        Client client = new Client("Bartek", "bar@b.pl", Collections.singletonList(new Account(200, "PLN")));
+        when(repository.findByEmail(client.getEmail())).thenReturn(client);
         //when
         clientService.withdraw(email, 50);
         //then
-        Client expectedClient = new Client("Bartek", "bar@b.pl", 150);
-        Client actualClient = clients.get(0);
-        Assertions.assertEquals(expectedClient, actualClient);
+        Client expectedClient = new Client("Bartek", "bar@b.pl", Collections.singletonList(new Account(150, "PLN")));
+
+        verify(repository).save(expectedClient);
     }
 
     @Test

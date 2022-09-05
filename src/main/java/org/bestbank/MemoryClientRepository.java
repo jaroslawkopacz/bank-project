@@ -1,6 +1,12 @@
-import java.util.List;
-import java.util.Set;
+package org.bestbank;
 
+import org.bestbank.Client;
+import org.bestbank.ClientRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
 public class MemoryClientRepository implements ClientRepository {
     List<Client> clients;
 
