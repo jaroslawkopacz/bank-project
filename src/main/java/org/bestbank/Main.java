@@ -1,19 +1,29 @@
-import java.util.ArrayList;
-import java.util.HashSet;
+package org.bestbank;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.util.List;
 import java.util.Scanner;
 
-public class Main {
+@SpringBootApplication
+public class Main implements CommandLineRunner {
     private ClientService clientService;
 
-
-    public static void main(String[] args) {
-        new Main().run();
+    @Autowired
+    public Main(@Qualifier("HibernateClientRepository") ClientService clientService) {
+        this.clientService = clientService;
     }
 
-    public void run(){
-        MemoryClientRepository memoryClientRepository = new MemoryClientRepository(new ArrayList<>());
-        clientService = new ClientService(memoryClientRepository);
+    public static void main(String[] args) {
+        SpringApplication.run(Main.class, args);
+    }
 
+    @Override
+    public void run(String... args) throws Exception {
         Scanner scanner = new Scanner(System.in);
 
         while(true){
@@ -47,7 +57,9 @@ public class Main {
         String email = scanner.next();
         System.out.println("Enter balance: ");
         double balance = scanner.nextDouble();
-        clientService.save(new Client(name, email, balance));
+        Account account = new Account(balance, "PLN");
+        List<Account> accounts = List.of(account);
+        clientService.save(new Client(name, email, accounts));
     }
 
     private void findUser() {

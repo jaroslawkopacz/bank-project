@@ -1,11 +1,17 @@
+package org.bestbank;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
+@Service
 public class ClientService {
-    private MemoryClientRepository memoryClientRepository;
+    private ClientRepository repository;
 
-    public ClientService(MemoryClientRepository memoryClientRepository) {
-        this.memoryClientRepository = memoryClientRepository;
+    @Autowired
+    public ClientService(ClientRepository repository) {
+        this.repository = repository;
     }
 
     public void save(Client client){
@@ -22,7 +28,7 @@ public class ClientService {
             throw new IllegalArgumentException("Balance cannot be negative!!");
         }
 
-        memoryClientRepository.save(client);
+        repository.save(client);
     }
 
     public Client findByEmail (String email){
@@ -34,7 +40,13 @@ public class ClientService {
         }
 
         String toLowerCaseEmail = email.toLowerCase();
-        return memoryClientRepository.findByEmail(toLowerCaseEmail);
+        Client client = repository.findByEmail(toLowerCaseEmail);
+
+        if(client == null) {
+           throw new NoSuchElementException("Client doesn't exist!");
+        }
+
+        return client;
     }
 
     public void transfer(String fromEmail, String toEmail, double amount){
@@ -60,6 +72,8 @@ public class ClientService {
         } else {
             throw new IllegalArgumentException("Not enough funds!");
         }
+        repository.save(fromClient);
+        repository.save(toClient);
     }
 
     public void withdraw(String email, double amount) {
@@ -78,7 +92,8 @@ public class ClientService {
 
 
         String toLowerCaseEmail = email.toLowerCase();
-        Client client = memoryClientRepository.findByEmail(toLowerCaseEmail);
+        Client client = repository.findByEmail(toLowerCaseEmail);
+
 
 
         if(amount > client.getBalance()){
@@ -87,6 +102,6 @@ public class ClientService {
 
         double balance = client.getBalance() - amount;
         client.setBalance(balance);
-
+        repository.save(client);
     }
 }
