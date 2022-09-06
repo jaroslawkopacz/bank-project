@@ -1,5 +1,7 @@
-package org.bestbank;
+package org.bestbank.service;
 
+import org.bestbank.repository.entity.Client;
+import org.bestbank.repository.ClientSpringDataJpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -7,10 +9,10 @@ import java.util.NoSuchElementException;
 
 @Service
 public class ClientService {
-    private ClientRepository repository;
+    private ClientSpringDataJpaRepository repository;
 
     @Autowired
-    public ClientService(ClientRepository repository) {
+    public ClientService(ClientSpringDataJpaRepository repository) {
         this.repository = repository;
     }
 
@@ -43,7 +45,7 @@ public class ClientService {
         Client client = repository.findByEmail(toLowerCaseEmail);
 
         if(client == null) {
-           throw new NoSuchElementException("Client doesn't exist!");
+            throw new NoSuchElementException("Client doesn't exist!");
         }
 
         return client;
