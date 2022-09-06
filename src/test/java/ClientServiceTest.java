@@ -1,7 +1,7 @@
-import org.bestbank.Account;
-import org.bestbank.Client;
-import org.bestbank.ClientRepository;
-import org.bestbank.ClientService;
+import org.bestbank.repository.entity.Account;
+import org.bestbank.repository.entity.Client;
+import org.bestbank.repository.ClientSpringDataJpaRepository;
+import org.bestbank.service.ClientService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,11 +12,11 @@ import static org.mockito.Mockito.*;
 
 public class ClientServiceTest {
     private ClientService clientService;
-    private ClientRepository repository;
+    private ClientSpringDataJpaRepository repository;
 
     @BeforeEach
     public void setup(){
-        repository = mock(ClientRepository.class);
+        repository = mock(ClientSpringDataJpaRepository.class);
         clientService = new ClientService(repository);
     }
 

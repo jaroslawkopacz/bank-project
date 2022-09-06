@@ -1,8 +1,7 @@
-package org.bestbank;
+package org.bestbank.repository.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bestbank.Client;
 
 import javax.persistence.*;
 

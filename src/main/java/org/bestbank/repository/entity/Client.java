@@ -1,4 +1,4 @@
-package org.bestbank;
+package org.bestbank.repository.entity;
 
 import lombok.*;
 
@@ -18,7 +18,7 @@ public class Client {
     private String name;
     @Column(name = "MAIL")
     private String email;
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "USER_ID")
     private List<Account> accounts;
 

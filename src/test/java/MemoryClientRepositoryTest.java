@@ -9,7 +9,7 @@
 //
 //public class MemoryClientRepositoryTest {
 //    private org.bestbank.MemoryClientRepository memoryClientRepository;
-//    private List<org.bestbank.Client> clients;
+//    private List<org.bestbank.repository.entity.Client> clients;
 //
 //    @BeforeEach
 //    public void setup(){
@@ -20,11 +20,11 @@
 //    @Test
 //    public void VerifyIfClientIsSavingToRepository(){
 //        //given
-//        org.bestbank.Client client = new org.bestbank.Client("Arek", "a@a.pl", 100);
-//        org.bestbank.Client expectedClient = new org.bestbank.Client("Arek", "a@a.pl", 100);
+//        org.bestbank.repository.entity.Client client = new org.bestbank.repository.entity.Client("Arek", "a@a.pl", 100);
+//        org.bestbank.repository.entity.Client expectedClient = new org.bestbank.repository.entity.Client("Arek", "a@a.pl", 100);
 //        //when
 //        memoryClientRepository.save(client);
-//        org.bestbank.Client actualClient = clients.stream().findFirst().get();
+//        org.bestbank.repository.entity.Client actualClient = clients.stream().findFirst().get();
 //        //then
 //        assertEquals(expectedClient, actualClient);
 //    }
