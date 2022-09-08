@@ -1,5 +1,7 @@
 package org.bestbank.service;
 
+import org.bestbank.controller.dto.ClientRequest;
+import org.bestbank.controller.dto.ClientResponse;
 import org.bestbank.repository.entity.Client;
 import org.bestbank.repository.ClientSpringDataJpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,19 +18,21 @@ public class ClientService {
         this.repository = repository;
     }
 
-    public void save(Client client){
-        if(client == null){
+    public void save(ClientRequest clientRequest){
+        if(clientRequest == null){
             throw new IllegalArgumentException("Client cannot be null!");
         }
-        if(client.getName() == null){
+        if(clientRequest.getName() == null){
             throw new IllegalArgumentException("Name cannot be null!");
         }
-        if(client.getEmail() == null){
+        if(clientRequest.getEmail() == null){
             throw new IllegalArgumentException("Email cannot be null!");
         }
-        if(client.getBalance() < 0){
-            throw new IllegalArgumentException("Balance cannot be negative!!");
-        }
+
+        Client client = Client.builder()
+                .name(clientRequest.getName())
+                .email(clientRequest.getEmail())
+                .build();
 
         repository.save(client);
     }
@@ -51,31 +55,29 @@ public class ClientService {
         return client;
     }
 
-    public void transfer(String fromEmail, String toEmail, double amount){
-        if(fromEmail == null || toEmail == null){
+    public ClientResponse findResponseByEmail (String email){
+        if(email == null){
             throw new IllegalArgumentException("Email cannot be null!");
         }
-        if(fromEmail.isEmpty() || toEmail.isEmpty()){
-            throw new IllegalArgumentException("Email cannot be null!");
-        }
-        if(fromEmail.equals(toEmail)){
-            throw new IllegalArgumentException("You cannot transfer money to yourself!");
+        if(email.isEmpty()){
+            throw new IllegalArgumentException("Email cannot be empty!");
         }
 
-        String toLowerCaseFromEmail = fromEmail.toLowerCase();
-        String toLowerCaseToEmail = toEmail.toLowerCase();
+        String toLowerCaseEmail = email.toLowerCase();
+        Client client = repository.findByEmail(toLowerCaseEmail);
 
-        Client fromClient = findByEmail(toLowerCaseFromEmail);
-        Client toClient = findByEmail(toLowerCaseToEmail);
-
-        if(amount > 0 && fromClient.getBalance() - amount >= 0){
-            fromClient.setBalance(fromClient.getBalance() - amount);
-            toClient.setBalance(toClient.getBalance() + amount);
-        } else {
-            throw new IllegalArgumentException("Not enough funds!");
+        if(client == null) {
+            throw new NoSuchElementException("Client doesn't exist!");
         }
-        repository.save(fromClient);
-        repository.save(toClient);
+
+        ClientResponse clientResponse = ClientResponse
+                .builder()
+                .name(client.getName())
+                .email(client.getEmail())
+                .accounts(client.getAccounts())
+                .build();
+
+        return clientResponse;
     }
 
     public void withdraw(String email, double amount) {

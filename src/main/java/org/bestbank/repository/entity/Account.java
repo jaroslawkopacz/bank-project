@@ -1,5 +1,7 @@
 package org.bestbank.repository.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +11,8 @@ import javax.persistence.*;
 @Table(name = "ACCOUNTS")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,6 +22,8 @@ public class Account {
     private double balance;
     @Column(name = "CURRENCY")
     private String currency;
+    @Column(name = "USER_ID")
+    private Long user_id;
 
     public Account(double balance, String currency) {
         this.balance = balance;

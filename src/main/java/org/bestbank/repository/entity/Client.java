@@ -8,7 +8,9 @@ import java.util.List;
 @Entity
 @Table(name = "USERS")
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Client {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +31,7 @@ public class Client {
     }
 
     public double getBalance(){
-        if(!accounts.isEmpty()){
+        if(!accounts.isEmpty()) {
             return accounts.get(0).getBalance();
         }
         return 0;
