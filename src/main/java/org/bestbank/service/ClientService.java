@@ -79,33 +79,4 @@ public class ClientService {
 
         return clientResponse;
     }
-
-    public void withdraw(String email, double amount) {
-        if(email == null){
-            throw new IllegalArgumentException("Email cannot be null!");
-        }
-        if(email.isEmpty()){
-            throw new IllegalArgumentException("Email cannot be null!");
-        }
-        if(amount <= 0){
-            throw new IllegalArgumentException("Amount must be positive!");
-        }
-        if(amount == 0){
-            throw new IllegalArgumentException("You cannot withdraw 0!");
-        }
-
-
-        String toLowerCaseEmail = email.toLowerCase();
-        Client client = repository.findByEmail(toLowerCaseEmail);
-
-
-
-        if(amount > client.getBalance()){
-            throw new IllegalArgumentException("No sufficient founds!");
-        }
-
-        double balance = client.getBalance() - amount;
-        client.setBalance(balance);
-        repository.save(client);
-    }
 }
