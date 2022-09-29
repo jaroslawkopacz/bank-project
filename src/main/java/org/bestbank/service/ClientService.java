@@ -3,7 +3,7 @@ package org.bestbank.service;
 import org.bestbank.controller.dto.ClientRequest;
 import org.bestbank.controller.dto.ClientResponse;
 import org.bestbank.repository.entity.Client;
-import org.bestbank.repository.ClientSpringDataJpaRepository;
+import org.bestbank.repository.ClientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +11,10 @@ import java.util.NoSuchElementException;
 
 @Service
 public class ClientService {
-    private ClientSpringDataJpaRepository repository;
+    private ClientRepository repository;
 
     @Autowired
-    public ClientService(ClientSpringDataJpaRepository repository) {
+    public ClientService(ClientRepository repository) {
         this.repository = repository;
     }
 
@@ -27,6 +27,12 @@ public class ClientService {
         }
         if(clientRequest.getEmail() == null){
             throw new IllegalArgumentException("Email cannot be null!");
+        }
+        if(clientRequest.getName().isEmpty()){
+            throw new IllegalArgumentException("Name cannot be empty!");
+        }
+        if(clientRequest.getEmail().isEmpty()){
+            throw new IllegalArgumentException("Email cannot be empty!");
         }
 
         Client client = Client.builder()
